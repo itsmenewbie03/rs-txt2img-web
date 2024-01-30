@@ -12,29 +12,32 @@ fn main() {
 // create a component that renders a div with the text "Hello, world!"
 fn App(cx: Scope) -> Element {
     let prompt = use_state(cx, || "".to_string());
-    let output = use_state(cx, || "Sample Image Below".to_string());
-    let prompt_result = use_future(cx, (output,), |(output,)| img_gen::get_image(output.to_string()));
+    let output = use_state(cx, || {
+        "An astronaut riding a unicorn realistic.".to_string()
+    });
+    let prompt_result = use_future(cx, (output,), |(output,)| {
+        img_gen::get_image(output.to_string())
+    });
     cx.render(rsx! {
-        div {
-            p {
-                "{output}"
-            }
+        div { class: "container mx-auto h-full w-full",
+            p { class: "text-3xl text-center", "{output}" }
             match prompt_result.value(){
                 Some(res) => {
-                    rsx! {img { src: res.as_str()}}
+                    rsx! {img { class: "aspect-square h-1/2 rounded-lg",src: res.as_str()}}
                 },
-                None => rsx! { p { "Failed to Fetch Image!"}}
-            }
-            img {
-                src: "https://raw.githubusercontent.com/itsmenewbie03/itsmenewbie03/main/shit_1-modified.png",
-                style: "width: 30%; heigth: 30%;"
-            }
+                None => rsx! { p { class: "text-2xl text-center","Image loading..."} }
+            },
             input {
+                class: "border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 mt-2",
                 value: "{prompt}",
+                placeholder: "Describe the image that you want.",
                 oninput: move |evt| prompt.set(evt.value.clone())
             }
             button {
-                onclick: move |_evt| output.set(prompt.to_string()),
+                class: "bg-violet-900 border border-gray-300 text-xl rounded-lg text-white focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 mt-2",
+                onclick: move |_evt| {
+                    output.set(prompt.to_string())
+                },
                 "Generate."
             }
         }
